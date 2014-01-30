@@ -1,9 +1,10 @@
 (ns game-of-chaos.core
-  (:require [clojure.browser.repl :as repl]
+  (:require ;[clojure.browser.repl :as repl]
             [jayq.core :as jq
              :refer [$ append ajax inner html $deferred when done resolve pipe on]]))
 
-($ (fn [] (repl/connect "http://localhost:9000/repl")))
+;($ (fn [] (repl/connect "http://localhost:9000/repl")))
+;($ (fn [] (repl/connect "http://betalabs:9000/repl")))
 
 (defn plot [context x y]
   (.fillRect context (int x) (int y) 1 1))
@@ -45,6 +46,7 @@
 (def state (atom :running))
 
 (defn start []
+  (reset! state :running)
   (let [btn ($ "#start")
         run-again (fn run-again []
                     (when (= @state :running)
@@ -59,11 +61,11 @@
     (reset! state :stopped)
     (.text btn "Start")))
 
-; TODO: figure out why the event is not triggering
-($ (on ($ :body) :click "#start" nil
+($ #(on ($ :body) :click "#start" {}
       (fn [e]
         (jq/prevent e)
         (.log js/console "hi")
         (if (= (.text ($ "#start")) "Start")
           (start)
           (stop)))))
+
