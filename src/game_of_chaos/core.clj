@@ -1,4 +1,4 @@
-(ns game-of-choas.core)
+(ns game-of-chaos.core)
 
 (defn foo
   "I don't do a whole lot."
