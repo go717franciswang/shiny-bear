@@ -9,18 +9,38 @@
 (defn plot [context x y]
   (.fillRect context (int x) (int y) 1 1))
 
-(def rules
-  [(fn [x y]
-     [0 (* 0.16 y)])
-   (fn [x y]
-     [(+ (* 0.85 x) (* 0.04 y)) (+ (* -0.04 x) (* 0.85 y) 1.6)])
-   (fn [x y]
-     [(+ (* 0.2 x) (* -0.26 y)) (+ (* 0.23 x) (* 0.22 y) 1.6)])
-   (fn [x y]
-     [(+ (* -0.15 x) (* 0.28 y)) (+ (* 0.26 x) (* 0.24 y) 0.44)])])
+(defn get-param [k i]
+  (let [id (str "#" k i)
+        v (.val ($ id))]
+    (if (empty? v)
+      0
+      (cljs.reader/read-string v))))
+
+(defn get-params [i]
+  (let [ks ["a" "b" "c" "d" "e" "f" "p"]]
+    (map #(get-param % i) ks)))
+
+(defn rule [i]
+  (let [[a b c d e f p] (get-params i)]
+    (fn [x y]
+      [(+ (* a x) (* b y) e) (+ (* c x) (* d y) f)])))
+
+(defn rules []
+  (vec (map rule (range 4))))
+
+(defn rand-rule-id [ps]
+  (let [n (rand)]
+    (loop [i 0
+           cp 0.0]
+      (let [new-cp (+ cp (get ps i))]
+        (if (>= new-cp n)
+          i
+          (recur (inc i) new-cp))))))
 
 (defn run [iterations]
-  (let [canvas (.get ($ "#c1") 0)
+  (let [rules (rules)
+        ps (vec (map (comp last get-params) (range 4)))
+        canvas (.get ($ "#canvas") 0)
         ctx (.getContext canvas "2d")
         width (.-width canvas)
         height (.-height canvas)
@@ -33,7 +53,7 @@
         (let [px (+ cx (* x 100))
               py (+ height (* y -80))]
           (plot ctx px py))
-        (let [rule (get rules (rand-int 4))
+        (let [rule (get rules (rand-rule-id ps))
               [x y] (rule x y)]
           (recur (inc i) x y))))))
 
@@ -61,11 +81,22 @@
     (reset! state :stopped)
     (.text btn "Start")))
 
+(defn clear []
+  (let [canvas (.get ($ "#canvas") 0)
+        ctx (.getContext canvas "2d")
+        width (.-width canvas)
+        height (.-height canvas)]
+    (.clearRect ctx 0 0 width height)))
+
 ($ #(on ($ :body) :click "#start" {}
       (fn [e]
         (jq/prevent e)
-        (.log js/console "hi")
         (if (= (.text ($ "#start")) "Start")
           (start)
           (stop)))))
+
+($ #(on ($ :body) :click "#clear" {}
+      (fn [e]
+        (jq/prevent e)
+        (clear))))
 

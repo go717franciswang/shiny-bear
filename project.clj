@@ -14,7 +14,7 @@
 
   :cljsbuild { 
     :builds [{:source-paths ["src-cljs"]
-              :compiler {:output-to "resources/js/main.js"
+              :compiler {:output-to "resources/js/chaos-game.js"
                          ;:optimizations :whitespace
                          :optimizations :advanced
                          :externs ["externs/jquery-1.9.js"]
